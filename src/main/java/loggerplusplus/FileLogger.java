@@ -108,7 +108,7 @@ public class FileLogger implements LogEntryListener{
         String ext = null;
 
         try {
-            ext = fileName.substring(fileName.lastIndexOf("."), fileName.length());
+            ext = fileName.substring(fileName.lastIndexOf("."));
         } catch (StringIndexOutOfBoundsException e) {
             ext = null;
         }

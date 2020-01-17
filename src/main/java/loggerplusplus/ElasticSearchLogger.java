@@ -1,16 +1,23 @@
 package loggerplusplus;
 
+import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.bulk.BulkItemResponse;
+import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.client.*;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+//import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -21,17 +28,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-
 public class ElasticSearchLogger implements LogEntryListener{
-    IndicesAdminClient adminClient;
-    Client client;
+    IndicesClient adminClient;
+    RestHighLevelClient client;
     ArrayList<LogEntry> pendingEntries;
     private InetAddress address;
     private short port;
     private String clusterName;
     private boolean isEnabled;
-    private String indexName;
+    private String indexStringName;
+    private GetIndexRequest indexName;
     private LoggerPreferences prefs;
 
     private final ScheduledExecutorService executorService;
@@ -41,7 +47,7 @@ public class ElasticSearchLogger implements LogEntryListener{
     public ElasticSearchLogger(LogManager logManager, LoggerPreferences prefs){
         this.prefs = prefs;
         this.isEnabled = false;
-        this.indexName = "logger";
+        this.indexName = new GetIndexRequest("logger");
 
         logManager.addLogListener(this);
         executorService = Executors.newScheduledThreadPool(1);
@@ -52,11 +58,13 @@ public class ElasticSearchLogger implements LogEntryListener{
             this.address = InetAddress.getByName(prefs.getEsAddress());
             this.port = prefs.getEsPort();
             this.clusterName = prefs.getEsClusterName();
-            this.indexName = prefs.getEsIndex();
-            Settings settings = Settings.builder().put("cluster.name", this.clusterName).build();
-            client = new PreBuiltTransportClient(settings)
-                .addTransportAddress(new TransportAddress(this.address, this.port));
-            adminClient = client.admin().indices();
+            this.indexStringName = prefs.getEsIndex();
+            this.indexName = new GetIndexRequest(indexStringName);
+
+            this.client = new RestHighLevelClient(
+                    RestClient.builder(
+                            new HttpHost(address, port, "https")));
+            adminClient = client.indices();
             createIndices();
             pendingEntries = new ArrayList<>();
             indexTask = executorService.scheduleAtFixedRate(new Runnable() {
@@ -76,7 +84,7 @@ public class ElasticSearchLogger implements LogEntryListener{
         this.isEnabled = isEnabled;
     }
 
-    private void createIndices(){
+    private void createIndices() {
 //            XContentBuilder builder = jsonBuilder().startObject()
 //                    .startObject("requestresponse")
 //                        .startObject("properties")
@@ -132,19 +140,41 @@ public class ElasticSearchLogger implements LogEntryListener{
 //                            .endObject()
 //                        .endObject()
 //                    .endObject().endObject();
-        boolean exists = adminClient.prepareExists(this.indexName).get().isExists();
+        boolean exists = false;
+        try {
+            exists = adminClient.exists(this.indexName, RequestOptions.DEFAULT);
+        }
+        catch (Exception e) {
+            System.err.println(e);
+
+        }
         if(!exists) {
-            CreateIndexRequestBuilder response = adminClient.prepareCreate(this.indexName);
-            response.get();
+            IndexRequest request = new IndexRequest(indexStringName);
+
+            try {
+                XContentBuilder builder = XContentFactory.jsonBuilder();
+                builder.startObject();
+                {
+                    builder.field("start", "start");
+                }
+                builder.endObject();
+                request.source();
+                IndexResponse indexResponse = client.index(request, RequestOptions.DEFAULT);
+            } catch (Exception e) {
+                System.err.println(e);
+            }
+
         }
 //            .addMapping("requestresponse", builder).get();
     }
 
     public IndexRequest buildIndexRequest(LogEntry logEntry){
         try{
-            IndexRequestBuilder requestBuilder = client.prepareIndex(this.indexName, "requestresponse")
-                    .setSource(
-                            jsonBuilder().startObject()
+            IndexRequest request = new IndexRequest(this.indexStringName);
+            XContentBuilder builder = XContentFactory.jsonBuilder();
+
+
+            builder.startObject()
                                 .field("protocol", logEntry.protocol)
                                 .field("method", logEntry.method)
                                 .field("host", logEntry.host)
@@ -157,12 +187,12 @@ public class ElasticSearchLogger implements LogEntryListener{
                                 .field("sentcookies", logEntry.sentCookies)
                                 .field("referrer", logEntry.referrerURL)
                                 .field("requestcontenttype", logEntry.requestContentType)
-//                                .field("requestbody", new String(logEntry.requestResponse.getRequest()))
+                                .field("requestbody", new String(logEntry.requestResponse.getRequest()))
 //                                .field("responsebody", new String(logEntry.requestResponse.getResponse()))
-                            .endObject()
-                    );
-            return requestBuilder.request();
-        } catch (IOException e) {
+                            .endObject();
+            request.source(builder);
+            return request;
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -178,7 +208,8 @@ public class ElasticSearchLogger implements LogEntryListener{
     private void indexPendingEntries(){
         if(!this.isEnabled || this.pendingEntries.size() == 0) return;
 
-        BulkRequestBuilder bulkBuilder = client.prepareBulk();
+        //BulkRequestBuilder bulkBuilder = client.prepareBulk();
+        BulkRequest brequest = new BulkRequest();
         ArrayList<LogEntry> entriesInBulk;
         synchronized (pendingEntries){
             entriesInBulk = (ArrayList<LogEntry>) pendingEntries.clone();
@@ -188,18 +219,27 @@ public class ElasticSearchLogger implements LogEntryListener{
         for (LogEntry logEntry : entriesInBulk) {
             IndexRequest request = buildIndexRequest(logEntry);
             if(request != null) {
-                bulkBuilder.add(request);
+                brequest.add(request);
             }else{
                 //Could not build index request. Ignore it?
             }
         }
 
-        BulkResponse resp = bulkBuilder.get();
-        if(resp.hasFailures()){
-            for (BulkItemResponse bulkItemResponse : resp.getItems()) {
-                System.err.println(bulkItemResponse.getFailureMessage());
+        //BulkResponse resp = brequest.get();
+
+        try {
+            BulkResponse resp = client.bulk(brequest, RequestOptions.DEFAULT);
+            if(resp.hasFailures()){
+                for (BulkItemResponse bulkItemResponse : resp.getItems()) {
+                    System.err.println("there was an error ------> JW");
+                    System.err.println(bulkItemResponse.getFailureMessage());
+                }
             }
+        } catch (IOException e) {
+
         }
+
+
     }
 
     @Override

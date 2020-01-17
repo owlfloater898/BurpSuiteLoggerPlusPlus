@@ -96,7 +96,7 @@ public class LoggerPreferences {
 	}
 
 	public synchronized String getAppInfo() {
-		return "Name: "+appName + " | Version: " + String.valueOf(version) + " | Source: " + projectLink + " | Author: " + author;
+		return "Name: "+appName + " | Version: " + version + " | Source: " + projectLink + " | Author: " + author;
 	}
 
 	public synchronized boolean isDebugMode() {

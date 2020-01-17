@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -123,7 +124,7 @@ public class MoreHelp {
 
 			if(response != null){
 				// splitting the message to retrieve the header and the body
-				String strFullMessage = new String(response,"UTF-8");
+				String strFullMessage = new String(response, StandardCharsets.UTF_8);
 				if(strFullMessage.contains("\r\n\r\n")){
 					String strBody = strFullMessage.split("\r\n\r\n",2)[1];
 					Pattern MY_PATTERN = Pattern.compile("(?im)^[\\s]*v[\\s]*(\\d+(\\.*\\d*){0,1})$");
