@@ -58,15 +58,47 @@ public class LoggerOptionsPanel extends JScrollPane{
     private JToggleButton btnAutoSaveLogs = new JToggleButton("Autosave as CSV");
     private final JCheckBox chkExtender = new JCheckBox("Extender");
     private final JCheckBox chkTarget = new JCheckBox("Target");
+    /////////////////////////////////
+    //////////BQ Labels//////////////
+    /////////////////////////////////
+    private final JPanel bqContainer;
+    private final JPanel bqPanel;
+    private final JPanel mimePanel;
+    private JCheckBox bqCheckReqBody = new JCheckBox("Include Request Body");
+    private JCheckBox bqCheckRespBody = new JCheckBox("Include Response Body");
+    private JLabel bqPtid = new JLabel("Penetration Test ID:");
+    private JLabel bqKeyFile = new JLabel("BigQuery Key File Location:");
+    private JLabel bqRefreshTime = new JLabel("Upload Delay (Seconds):");
+    private final JTextField bqFileField = new JTextField();
+    private final JTextField bqPentestIdField = new JTextField();
+    private final JLabel bqValueChangeWarning = new JLabel("Warning: Changing preferences while running will disable the upload service and clear all pending values.");
 
+    private JCheckBox mimeHtml = new JCheckBox("HTML");
+    private JCheckBox mimeImage = new JCheckBox("Image");
+    private JCheckBox mimeScript = new JCheckBox("Script");
+    private JCheckBox mimeXML = new JCheckBox("XML");
+    private JCheckBox mimeCSS = new JCheckBox("CSS");
+    private JCheckBox mimeBinary = new JCheckBox("Binary");
+    private JCheckBox mimeFlash = new JCheckBox("Flash");
+    private JCheckBox mimeOtherText = new JCheckBox("Other Text");
+    //private JLabel bqSecondsHint = new JLabel("(Seconds)");
+
+    private final JSpinner bqUploadDelay = new JSpinner(new SpinnerNumberModel(10, 5, 120, 5));
+
+    /////////////////////////////////
+    //////////END BQ Label///////////
+    /////////////////////////////////
     private final JPanel elasticPanel;
+
     private final JToggleButton esEnabled = new JToggleButton("Disabled");
+    private final JToggleButton bqEnabled = new JToggleButton("Disabled");
     private final JSpinner esPortSpinner = new JSpinner(new SpinnerNumberModel(9100, 0, 65535, 1));
     private final JTextField esAddressField = new JTextField();
     private final JTextField esClusterField = new JTextField();
     private final JTextField esIndexField = new JTextField();
     private final JSpinner esUploadDelay = new JSpinner(new SpinnerNumberModel(120, 10, 999999, 10));
     private final JLabel esValueChangeWarning = new JLabel("Warning: Changing preferences while running will disable the upload service and clear all pending values.");
+
 
 
     private final JLabel lblColumnSettings = new JLabel("Note 0: Right click on columns' headers to change settings.");
@@ -164,6 +196,10 @@ public class LoggerOptionsPanel extends JScrollPane{
         innerContainer.add(exportPanel, gbc);
 
 
+        ////////////////////////////////
+        ////Begin Elastic Panel////
+        ////////////////////////////////
+
         elasticPanel = new JPanel(new GridBagLayout());
         elasticPanel.setBorder(BorderFactory.createTitledBorder("Elastic Search"));
         gbc = new GridBagConstraints();
@@ -224,12 +260,128 @@ public class LoggerOptionsPanel extends JScrollPane{
         gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 1;
-        gbc.gridy = 10;
+        gbc.gridy = 23;
         gbc.gridheight = 4;
         gbc.weightx = 1.0;
         gbc.gridwidth = 2;
         innerContainer.add(elasticPanel, gbc);
+        ////////////////////////////////////////////////////
+        // End Elastic Panel  //
+        ////////////////////////////////////////////////////
 
+        ////////////////////////////////////////////////////
+        ////Begin BQ panel////
+        ////////////////////////////////////////////////////
+
+        bqContainer = new JPanel(new GridLayout(4,2));
+        bqPanel = new JPanel(new GridBagLayout()); //create BQ panel
+        bqPanel.setBorder(BorderFactory.createTitledBorder("Cobalt BigQuery Upload"));
+
+        //create enabled button
+        gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 3;
+        gbc.weighty = 0;
+        gbc.weightx = 0;
+        bqPanel.add(bqEnabled, gbc);
+
+
+
+        //add Keyfile button and field
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        gbc.weightx = 1;
+        gbc.insets = new Insets(0,0,0,0);
+        gbc.ipadx = 30;
+        bqPanel.add(bqFileField, gbc);
+        gbc.ipadx = 0;
+        gbc.insets = new Insets(0,0,0,0);
+        gbc.gridy = 1;
+        gbc.gridx = 0;
+        gbc.weightx = .05;
+        bqPanel.add(bqKeyFile, gbc);
+
+        ////Pentest Id field and label
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        bqPanel.add(bqPtid ,gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        bqPanel.add(bqPentestIdField, gbc);
+
+        /////Upload Delay Field
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 1;
+        gbc.insets = new Insets(0,0,0,0);
+        bqPanel.add(bqRefreshTime, gbc);
+        gbc.gridx = 1;
+        gbc.gridwidth = 1;
+        gbc.weightx = .05;
+
+        bqPanel.add(bqUploadDelay, gbc);
+
+
+
+        /*gbc.weightx = .75;
+        gbc.gridx = 2;
+        gbc.gridwidth = 1;
+        bqPanel.add(bqSecondsHint, gbc);*/
+        //panel for mimetypes
+        mimePanel = new JPanel(new GridLayout(4,2)); //create mime panel
+        mimePanel.setBorder(BorderFactory.createTitledBorder("Mime Types to Include"));
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0;
+        mimePanel.add(mimeHtml , gbc);
+        gbc.gridy = 1;
+        mimePanel.add(mimeCSS, gbc);
+        gbc.gridy = 2;
+        mimePanel.add(mimeXML, gbc);
+        gbc.gridy = 3;
+        mimePanel.add(mimeImage, gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        mimePanel.add(mimeBinary, gbc);
+        gbc.gridy = 1;
+        mimePanel.add(mimeFlash,gbc);
+        gbc.gridy = 2;
+        mimePanel.add(mimeScript, gbc);
+        gbc.gridy = 3;
+        mimePanel.add(mimeOtherText, gbc);
+
+
+        gbc.gridy = 0;
+        gbc.gridx = 2;
+        gbc .gridwidth = 2;
+        gbc.gridheight = 4;
+        //gbc.insets = new Insets(0,0,55,0);
+        bqPanel.add(mimePanel, gbc);
+
+
+
+        //add panel to container
+        gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridx = 1;
+        gbc.gridy = 10;
+
+        gbc.weightx = 1.0;
+        gbc.gridwidth = 2;
+        gbc.gridheight = 2;
+        innerContainer.add(bqPanel, gbc);
+        //innerContainer.add(bqContainer, gbc);
+        ////////////////////////////////////////////////////
+        ////End BQ panel////
+        ////////////////////////////////////////////////////
 
         JPanel otherPanel = new JPanel(new GridBagLayout());
         otherPanel.setBorder(BorderFactory.createTitledBorder("Other"));
@@ -240,50 +392,61 @@ public class LoggerOptionsPanel extends JScrollPane{
         if(!LoggerPlusPlus.getCallbacks().isExtensionBapp()) {
             gbc.gridx = gbc.gridy = 1;
             gbc.gridx = 1;
+            gbc.gridwidth =1;
             otherPanel.add(new JLabel("Check For Updates:"), gbc);
-            gbc.gridx = 3;
+            gbc.gridx = 2;
+            gbc.gridwidth =2;
             otherPanel.add(chkUpdateOnStartup, gbc);
         }
         gbc.gridy++;
         gbc.gridx = 1;
+        gbc.gridwidth = 1;
         JLabel lblResponseSettings = new JLabel("Response Timeout (s):");
         otherPanel.add(lblResponseSettings, gbc);
         gbc.gridx++;
-        otherPanel.add(Box.createHorizontalStrut(7), gbc);
-        gbc.gridx++;
+        //otherPanel.add(Box.createHorizontalStrut(7), gbc);
+        //gbc.gridx++;
+        gbc.gridwidth = 2;
         spnResponseTimeout = new JSpinner();
         otherPanel.add(spnResponseTimeout, gbc);
-        gbc.gridx++;
-        otherPanel.add(Box.createHorizontalStrut(7), gbc);
-        gbc.gridx++;
+        gbc.gridx = 4;
+        //otherPanel.add(Box.createHorizontalStrut(7), gbc);
+        //gbc.gridx++;
+        gbc.gridwidth = 1;
         otherPanel.add(new JLabel("Min: 10 Max: 600"), gbc);
 
         gbc.gridx = 1;
         gbc.gridy++;
+        gbc.gridwidth = 1;
         JLabel lblMaxEntries = new JLabel("Maximum Log Entries:");
         otherPanel.add(lblMaxEntries, gbc);
         gbc.gridx++;
-        otherPanel.add(Box.createHorizontalStrut(7), gbc);
-        gbc.gridx++;
+        //otherPanel.add(Box.createHorizontalStrut(7), gbc);
+        //gbc.gridx++;
+        gbc.gridwidth = 2;
         spnMaxEntries = new JSpinner();
         otherPanel.add(spnMaxEntries, gbc);
-        gbc.gridx++;
-        otherPanel.add(Box.createHorizontalStrut(7), gbc);
-        gbc.gridx++;
+        gbc.gridx = 4;
+        //otherPanel.add(Box.createHorizontalStrut(7), gbc);
+        //gbc.gridx++;
+        gbc.gridwidth = 1;
         otherPanel.add(new JLabel("Min: 10 Max: 1,000,000"), gbc);
 
         gbc.gridx = 1;
         gbc.gridy++;
+        gbc.gridwidth = 1;
         JLabel lblSearchThreads = new JLabel("Search Threads:");
         otherPanel.add(lblSearchThreads, gbc);
         gbc.gridx++;
-        otherPanel.add(Box.createHorizontalStrut(7), gbc);
-        gbc.gridx++;
+        //otherPanel.add(Box.createHorizontalStrut(7), gbc);
+        //gbc.gridx++;
+        gbc.gridwidth = 2;
         spnSearchThreads = new JSpinner();
         otherPanel.add(spnSearchThreads, gbc);
-        gbc.gridx++;
-        otherPanel.add(Box.createHorizontalStrut(7), gbc);
-        gbc.gridx++;
+        gbc.gridx = 4;
+        //otherPanel.add(Box.createHorizontalStrut(7), gbc);
+        //gbc.gridx++;
+        gbc.gridwidth = 1;
         otherPanel.add(new JLabel("Min: 1 Max: 50"), gbc);
 
         gbc = new GridBagConstraints();
@@ -373,7 +536,7 @@ public class LoggerOptionsPanel extends JScrollPane{
         gbc.gridx = 1;
         gbc.gridy = 1;
         contentWrapper.add(Box.createHorizontalStrut(15), gbc);
-        gbc.ipadx = gbc.ipady = 25;
+        gbc.ipadx = gbc.ipady = 30;
         gbc.gridx = 2;
         contentWrapper.add(innerContainer, gbc);
 
@@ -571,7 +734,9 @@ public class LoggerOptionsPanel extends JScrollPane{
             }
         });
 
-
+        //////////////////////////////////
+        ////////////Elastic Search////////
+        //////////////////////////////////
         this.esAddressField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent documentEvent) {}
@@ -637,6 +802,114 @@ public class LoggerOptionsPanel extends JScrollPane{
                 toggleEsEnabledButton(esEnabled.isSelected());
             }
         });
+
+        /////////////////////////////////////////////////////////
+        ///////////////////////END Elastic//////////////////////
+        ////////////////////////////////////////////////////////
+
+
+        /////////////////////////BEGIN BQ////////////////////////
+        /////////////////////////////////////////////////////////
+
+        this.bqFileField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent documentEvent) {}
+            @Override
+            public void removeUpdate(DocumentEvent documentEvent) {}
+            @Override
+            public void changedUpdate(DocumentEvent documentEvent) {
+                toggleBqEnabledButton(false);
+            }
+        });
+
+        this.bqPentestIdField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent documentEvent) {}
+            @Override
+            public void removeUpdate(DocumentEvent documentEvent) {}
+            @Override
+            public void changedUpdate(DocumentEvent documentEvent) {
+                toggleBqEnabledButton(false);
+            }
+        });
+
+        this.bqEnabled.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                toggleBqEnabledButton(bqEnabled.isSelected());
+            }
+        });
+
+
+        this.bqUploadDelay.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent changeEvent) {
+                loggerPreferences.setBqDelay((Integer) bqUploadDelay.getValue());
+                toggleBqEnabledButton(false);
+            }
+        });
+
+        this.bqFileField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
+                super.focusLost(focusEvent);
+                loggerPreferences.setBqFileLocation(bqFileField.getText());
+            }
+        });
+
+        this.bqPentestIdField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
+                super.focusLost(focusEvent);
+                loggerPreferences.setPtid(bqPentestIdField.getText());
+            }
+        });
+
+
+        mimeXML.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                loggerPreferences.setEnabled4MimeXML(mimeXML.isSelected());
+            }
+        });
+        mimeBinary.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                loggerPreferences.setEnabled4MimeBinary(mimeBinary.isSelected());
+            }
+        });
+        mimeCSS.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                loggerPreferences.setEnabled4MimeCSS(mimeCSS.isSelected());
+            }
+        });
+        mimeFlash.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                loggerPreferences.setEnabled4MimeFlash(mimeFlash.isSelected());
+            }
+        });
+        mimeHtml.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                loggerPreferences.setEnabled4MimeHtml(mimeHtml.isSelected());
+            }
+        });
+        mimeImage.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                loggerPreferences.setEnabled4MimeImage(mimeImage.isSelected());
+            }
+        });
+        mimeOtherText.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                loggerPreferences.setEnabled4MimeOtherText(mimeOtherText.isSelected());
+            }
+        });
+        mimeScript.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                loggerPreferences.setEnabled4MimeScript(mimeScript.isSelected());
+            }
+        });
+
+        //////////////////////////////////////////////////////////
+        /////////////////END BQ///////////////////////////////////
+        //////////////////////////////////////////////////////////
 
         this.btnImportFilters.addActionListener(new ActionListener() {
             @Override
@@ -729,6 +1002,40 @@ public class LoggerOptionsPanel extends JScrollPane{
         }).start();
     }
 
+
+    private void toggleBqEnabledButton(final boolean isSelected) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if(isSelected) {
+                    bqEnabled.setText("Starting...");
+                }
+                try {
+                    LoggerPlusPlus.getInstance().setBqEnabled(isSelected);
+                    //TODO change to state username of account
+                    bqEnabled.setText((isSelected ? "Enabled" : "Disabled"));
+                    bqEnabled.setSelected(isSelected);
+                    if(isSelected) {
+                        GridBagConstraints gbc = new GridBagConstraints();
+                        gbc.gridx = 0;
+                        gbc.gridwidth = 3;
+
+                        //TODO change to state username of account
+                        bqPanel.add(bqValueChangeWarning, gbc);
+                    }else{
+                        bqPanel.remove(bqValueChangeWarning);
+                    }
+                } catch (Exception e) {
+                    if(isSelected) {
+                        MoreHelp.showWarningMessage("BigQuery could not be enabled. Please check your settings.\n" + e.getStackTrace()[0].toString());
+                    }
+                    bqEnabled.setText("Connection Failed");
+                    bqEnabled.setSelected(false);
+                }
+            }
+        }).start();
+    }
+
     private void setPreferencesValues() {
 
         chkAutoImport.setSelected(loggerPreferences.autoImportProxyHistory());
@@ -760,6 +1067,23 @@ public class LoggerOptionsPanel extends JScrollPane{
         this.esClusterField.setText(loggerPreferences.getEsClusterName());
         this.esIndexField.setText(loggerPreferences.getEsIndex());
         this.esUploadDelay.setValue(loggerPreferences.getEsDelay());
+
+        //TODO bq fields
+        //Gets the BQ from preferences
+        this.bqPentestIdField.setText(loggerPreferences.getPtid());
+        this.bqFileField.setText(loggerPreferences.getBqFileLocation());
+        this.bqUploadDelay.setValue(loggerPreferences.getBqDelay());
+        this.mimeHtml.setSelected(loggerPreferences.isEnabled4MimeHtml());
+        this.mimeScript.setSelected(loggerPreferences.isEnabled4MimeScript());
+        this.mimeOtherText.setSelected(loggerPreferences.isEnabled4MimeOtherText());
+        this.mimeFlash.setSelected(loggerPreferences.isEnabled4MimeFlash());
+        this.mimeBinary.setSelected(loggerPreferences.isEnabled4MimeBinary());
+        this.mimeXML.setSelected(loggerPreferences.isEnabled4MimeXML());
+        this.mimeCSS.setSelected(loggerPreferences.isEnabled4MimeCSS());
+        this.mimeImage.setSelected(loggerPreferences.isEnabled4MimeImage());
+        toggleBqEnabledButton(loggerPreferences.isBqEnabled());
+
+
 
         if (!loggerPreferences.canSaveCSV()) {
             btnSaveLogs.setEnabled(false);

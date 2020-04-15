@@ -14,7 +14,6 @@ package loggerplusplus;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import loggerplusplus.filter.ColorFilter;
 import loggerplusplus.filter.Filter;
@@ -71,6 +70,21 @@ public class LoggerPreferences {
 	private String esClusterName;
 	private String esIndex;
 	private int esDelay;
+
+
+	////////////////
+	private Boolean isBqEnabled;
+	private String bqFileLocation;
+	private String ptid;
+	private int bqDelay;
+	private boolean isEnabled4MimeHtml;
+	private boolean isEnabled4MimeCSS;
+	private boolean isEnabled4MimeXML;
+	private boolean isEnabled4MimeBinary;
+	private boolean isEnabled4MimeFlash;
+	private boolean isEnabled4MimeImage;
+	private boolean isEnabled4MimeScript;
+	private boolean isEnabled4MimeOtherText;
 
 	// Reading from registry constantly is expensive so I have changed the preferences to load them in objects
 
@@ -311,6 +325,10 @@ public class LoggerPreferences {
 		this.autoImportProxyHistory = autoImport;
 	}
 
+
+	////////////////////////////////////////////////
+	//////////////ElasticSearchPrefs///////////////
+	///////////////////////////////////////////////
 	public String getEsAddress() {
 		return esAddress;
 	}
@@ -355,6 +373,134 @@ public class LoggerPreferences {
 		LoggerPlusPlus.getCallbacks().saveExtensionSetting("esDelay", String.valueOf(delay));
 		this.esDelay = delay;
 	}
+
+
+
+
+	////////////////////////////////////////////////
+	//////////////END ElasticSearchPrefs///////////////
+	///////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////
+	//////////////////////BQ PREFS///////////////////////
+	/////////////////////////////////////////////////
+
+
+	public synchronized boolean isBqEnabled() {
+		return isBqEnabled;
+	}
+
+	public synchronized  void setBqEnabled(boolean isBqEnabled) {
+		//LoggerPlusPlus.getCallbacks().saveExtensionSetting("isBqEnabled", String.valueOf(isBqEnabled));
+		this.isBqEnabled = isBqEnabled;
+	}
+
+
+	public String getBqFileLocation() {
+		return bqFileLocation;
+	}
+
+	public void setBqFileLocation(String bqFileLocation){
+		LoggerPlusPlus.getCallbacks().saveExtensionSetting("bqFileLocation", bqFileLocation);
+		this.bqFileLocation = bqFileLocation;
+	}
+
+
+	public String getPtid(){
+		return ptid;
+	}
+
+	public void setPtid(String ptid){
+		LoggerPlusPlus.getCallbacks().saveExtensionSetting("ptid", ptid);
+		this.ptid = ptid;
+	}
+
+	public int getBqDelay(){
+		return bqDelay;
+	}
+
+	public void setBqDelay(int bqdelay){
+		LoggerPlusPlus.getCallbacks().saveExtensionSetting("bqDelay", String.valueOf(bqdelay));
+		this.bqDelay = bqdelay;
+	}
+
+	public synchronized boolean isEnabled4MimeXML() {
+		return isEnabled4MimeXML;
+	}
+
+	public synchronized  void setEnabled4MimeXML(boolean isEnabled4MimeXML) {
+		LoggerPlusPlus.getCallbacks().saveExtensionSetting("isEnabled4MimeXML", String.valueOf(isEnabled4MimeXML));
+		this.isEnabled4MimeXML = isEnabled4MimeXML;
+	}
+
+	public synchronized boolean isEnabled4MimeBinary() {
+		return isEnabled4MimeBinary;
+	}
+
+	public synchronized  void setEnabled4MimeBinary(boolean isEnabled4MimeBinary) {
+		LoggerPlusPlus.getCallbacks().saveExtensionSetting("isEnabled4MimeBinary", String.valueOf(isEnabled4MimeBinary));
+		this.isEnabled4MimeBinary = isEnabled4MimeBinary;
+	}
+
+	public synchronized boolean isEnabled4MimeHtml() {
+		return isEnabled4MimeHtml;
+	}
+
+	public synchronized  void setEnabled4MimeHtml(boolean isEnabled4MimeHtml) {
+		LoggerPlusPlus.getCallbacks().saveExtensionSetting("isEnabled4MimeHtml", String.valueOf(isEnabled4MimeHtml));
+		this.isEnabled4MimeHtml = isEnabled4MimeHtml;
+	}
+
+	public synchronized boolean isEnabled4MimeFlash() {
+		return isEnabled4MimeFlash;
+	}
+
+	public synchronized  void setEnabled4MimeFlash(boolean isEnabled4MimeFlash) {
+		LoggerPlusPlus.getCallbacks().saveExtensionSetting("isEnabled4MimeFlash", String.valueOf(isEnabled4MimeFlash));
+		this.isEnabled4MimeFlash = isEnabled4MimeFlash;
+	}
+
+	public synchronized boolean isEnabled4MimeImage() {
+		return isEnabled4MimeImage;
+	}
+
+	public synchronized  void setEnabled4MimeImage(boolean isEnabled4MimeImage) {
+		LoggerPlusPlus.getCallbacks().saveExtensionSetting("isEnabled4MimeImage", String.valueOf(isEnabled4MimeImage));
+		this.isEnabled4MimeImage = isEnabled4MimeImage;
+	}
+
+	public synchronized boolean isEnabled4MimeOtherText() {
+		return isEnabled4MimeOtherText;
+	}
+
+	public synchronized  void setEnabled4MimeOtherText(boolean isEnabled4MimeOtherText) {
+		LoggerPlusPlus.getCallbacks().saveExtensionSetting("isEnabled4MimeOtherText", String.valueOf(isEnabled4MimeOtherText));
+		this.isEnabled4MimeOtherText = isEnabled4MimeOtherText;
+	}
+
+	public synchronized boolean isEnabled4MimeScript() {
+		return isEnabled4MimeScript;
+	}
+
+	public synchronized void setEnabled4MimeScript(boolean isEnabled4MimeScript) {
+		LoggerPlusPlus.getCallbacks().saveExtensionSetting("isEnabled4MimeScript", String.valueOf(isEnabled4MimeScript));
+		this.isEnabled4MimeScript = isEnabled4MimeScript;
+	}
+
+	public synchronized boolean isEnabled4MimeCSS() {
+		return isEnabled4MimeCSS;
+	}
+
+	public synchronized  void setEnabled4MimeCSS(boolean isEnabled4MimeCSS) {
+		LoggerPlusPlus.getCallbacks().saveExtensionSetting("isEnabled4MimeCSS", String.valueOf(isEnabled4MimeCSS));
+		this.isEnabled4MimeCSS = isEnabled4MimeCSS;
+	}
+
+
+	/////////////////////////////////////////
+	/////////////END BQ Prefs/////////////////////////////////
+	/////////////////////////////////////////////////////
 
 
 	//Do not persist over restarts.
@@ -416,12 +562,12 @@ public class LoggerPreferences {
 		String colorFilters = getStringSetting("colorfilters", defaultColorFilter);
 		try {
 			this.colorFilters = gson.fromJson(colorFilters, new TypeToken<Map<UUID, ColorFilter>>() {}.getType());
-		}catch (JsonSyntaxException jSException){}
+		}catch (Exception jSException){}
 		if(this.colorFilters == null) this.colorFilters = new HashMap<UUID, ColorFilter>();
 		String savedFilters = getStringSetting("savedfilters", "");
 		try{
 			this.savedFilters = gson.fromJson(savedFilters, new TypeToken<List<SavedFilter>>(){}.getType());
-		}catch (JsonSyntaxException jSException){}
+		}catch (Exception jSException){}
 		if(this.savedFilters == null) this.savedFilters = new ArrayList<SavedFilter>();
 		LoggerPlusPlus.getCallbacks().printOutput("Loaded " + this.savedFilters.size() + " filters.");
 		LoggerPlusPlus.getCallbacks().printOutput("Loaded " + this.colorFilters.size() + " color filters.");
@@ -443,7 +589,46 @@ public class LoggerPreferences {
 		this.esClusterName = getStringSetting("esClusterName", "elasticsearch");
 		this.esIndex = getStringSetting("esIndex", "logger");
 		this.esDelay = getIntSetting("esDelay", 120);
+
+
+		///////////////////BQ///////////////////////
+
+		this.bqFileLocation = getStringSetting("bqFileLocation", "/tmp/null");
+		this.ptid = getStringSetting("ptid", "Enter a PTID");
+		this.bqDelay = getIntSetting("bqDelay", 20);
+		this.isEnabled4MimeHtml = getBooleanSetting("isEnabled4MimeHtml" , true);
+		this.isEnabled4MimeScript = getBooleanSetting("isEnabled4MimeScript" , false);
+		this.isEnabled4MimeFlash = getBooleanSetting("isEnabled4MimeFlash" , false);
+		this.isEnabled4MimeImage = getBooleanSetting("isEnabled4MimeImage" , false);
+		this.isEnabled4MimeCSS = getBooleanSetting("isEnabled4MimeCSS" , false);
+		this.isEnabled4MimeXML = getBooleanSetting("isEnabled4MimeXML" , true);
+		this.isEnabled4MimeBinary = getBooleanSetting("isEnabled4MimeBinary" , false);
+		this.isEnabled4MimeOtherText = getBooleanSetting("isEnabled4MimeOtherText" , true);
+
+		//Prompt to enable BQ
+		promptForBQEnable();
+		//setBqEnabled(false);
+
 	}
+
+	private void promptForBQEnable() {
+		if (this.ptid != null && !this.ptid.equalsIgnoreCase("Enter a PTID") && this.bqFileLocation != null && !this.bqFileLocation.equalsIgnoreCase("/tmp/null")) {
+			int enablebq = JOptionPane.showConfirmDialog(null, "Would you like to enable Logger++ and Cobalt's BigQuery Upload for PentestID: " + this.ptid + " and previously saved options?", "BigQuery Upload", JOptionPane.YES_NO_OPTION);
+			if (enablebq == JOptionPane.YES_OPTION) {
+				setEnabled(true);
+				setBqEnabled(true);
+			}
+			else {
+				setBqEnabled(false);
+			}
+		}
+		else {
+			setBqEnabled(false);
+		}
+	}
+	///////////////////////////////////
+	/////////////////END BQ/////////////////////
+	/////////////////////////////////////
 
 	private Boolean getBooleanSetting(String setting, Boolean fallback){
 		String val = LoggerPlusPlus.getCallbacks().loadExtensionSetting(setting);

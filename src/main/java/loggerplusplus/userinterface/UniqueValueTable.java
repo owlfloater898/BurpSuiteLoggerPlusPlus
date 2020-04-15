@@ -84,10 +84,10 @@ public class UniqueValueTable extends JTable {
     }
 
     class UniqueValueCount implements Comparable{
-        String groups[];
+        String[] groups;
         int count;
 
-        UniqueValueCount(String groups[], int count){
+        UniqueValueCount(String[] groups, int count){
             this.groups = groups;
             this.count = count;
         }

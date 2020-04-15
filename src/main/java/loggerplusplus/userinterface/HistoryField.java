@@ -65,8 +65,8 @@ public class HistoryField extends JComboBox {
 
         public void addToHistory(String val){
             if(val.equals("")) return;
-            if(history.contains(val)) history.remove(val);
-            history.add((String) val);
+            history.remove(val);
+            history.add(val);
             if(burpSaveLocation != null){
                 LoggerPlusPlus.getCallbacks().saveExtensionSetting(burpSaveLocation, new Gson().toJson(history, new TypeToken<List<String>>(){}.getType()));
             }

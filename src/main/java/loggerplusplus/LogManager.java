@@ -199,6 +199,7 @@ public class LogManager implements IHttpListener, IProxyListener {
                 (prefs.isEnabled4TargetTab() && toolFlag== IBurpExtenderCallbacks.TOOL_TARGET));
     }
 
+
     public void reset() {
         this.logEntries.clear();
         this.pendingRequests.clear();

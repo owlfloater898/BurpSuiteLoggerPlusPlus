@@ -21,7 +21,7 @@ public class LoggerPlusPlus implements ITab, IBurpExtender {
     private LoggerPreferences loggerPreferences;
     private LogManager logManager;
     private ElasticSearchLogger elasticSearchLogger;
-
+    private BigQueryLogger bigQueryLogger;
     //UX
     private PopOutPanel uiPopOutPanel;
     private JTabbedPane tabbedWrapper;
@@ -48,7 +48,7 @@ public class LoggerPlusPlus implements ITab, IBurpExtender {
         loggerPreferences = new LoggerPreferences(LoggerPlusPlus.this);
         logManager = new LogManager(loggerPreferences);
         elasticSearchLogger = new ElasticSearchLogger(logManager, loggerPreferences);
-
+        bigQueryLogger = new BigQueryLogger(logManager, loggerPreferences);
         if(!callbacks.isExtensionBapp() && loggerPreferences.checkUpdatesOnStartup()){
             MoreHelp.checkForUpdate(false);
         }
@@ -291,4 +291,9 @@ public class LoggerPlusPlus implements ITab, IBurpExtender {
     public void setEsEnabled(boolean esEnabled) throws Exception {
         this.elasticSearchLogger.setEnabled(esEnabled);
     }
+
+    public void setBqEnabled(boolean bqEnabled) throws Exception {
+        this.bigQueryLogger.setEnabled(bqEnabled);
+    }
+
 }
