@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -123,11 +124,41 @@ public class BigQueryLogger implements LogEntryListener {
             jsonObject.addProperty("referrer", logEntry.referrerURL);
             jsonObject.addProperty("requestcontenttype", logEntry.requestContentType);
             jsonObject.addProperty("ptid", this.ptid);
- //           jsonObject.addProperty("requestbody", new String(logEntry.requestResponse.getRequest()));
- //           jsonObject.addProperty("responsebody", new String(logEntry.requestResponse.getResponse()));
+            jsonObject.addProperty("requestbody", new String(logEntry.requestResponse.getRequest()));
+            jsonObject.addProperty("responsebody", new String(logEntry.requestResponse.getResponse()));
 
 
             return jsonObject.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    public Map buildRequest(LogEntry logEntry){
+        try{
+            Map<String, Object> hashedrows = new HashMap<String, Object>();
+
+
+            hashedrows.put("protocol", logEntry.protocol);
+            hashedrows.put("method", logEntry.method);
+            hashedrows.put("host", logEntry.host);
+            hashedrows.put("path", logEntry.relativeURL);
+            hashedrows.put("requesttime", logEntry.requestTime.equals("NA") ? null : logEntry.requestTime);
+            hashedrows.put("responsetime", logEntry.responseTime.equals("NA") ? null : logEntry.responseTime);
+            hashedrows.put("status", logEntry.status.toString());
+            hashedrows.put("title", logEntry.title);
+            hashedrows.put("newcookies", logEntry.newCookies);
+            hashedrows.put("sentcookies", logEntry.sentCookies);
+            hashedrows.put("referrer", logEntry.referrerURL);
+            hashedrows.put("requestcontenttype", logEntry.requestContentType);
+            hashedrows.put("ptid", this.ptid);
+            hashedrows.put("requestbody", new String(logEntry.requestResponse.getRequest()));
+            hashedrows.put("responsebody", new String(logEntry.requestResponse.getResponse()));
+
+
+            return hashedrows;
         } catch (Exception e) {
             e.printStackTrace();
         }
