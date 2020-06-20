@@ -172,6 +172,52 @@ public class BigQueryLogger implements LogEntryListener {
         ArrayList<LogEntry> entriesInBulk;
         StringBuilder sb = new StringBuilder();
         int rowCount = 0;
+        synchronized
+        (pendingEntries) {
+            entriesInBulk = (ArrayList<LogEntry>) pendingEntries.clone();
+            pendingEntries.clear();
+        }
+
+        for (LogEntry logEntry : entriesInBulk) {
+            if (mimeIsUploadable(convertMimetype(logEntry.responseMimeType, logEntry.responseInferredMimeType))) {
+                String request = buildIndexRequest(logEntry);
+                double totalSizeToBe = request.length() + sb.length() +1;
+                //JOptionPane.showMessageDialog(null, "this is the request: " + request);
+
+
+                if (request != null && request.length() + 1 < this.bigQueryLimit && totalSizeToBe <= this.bigQueryLimit && rowCount < rowCountLimit) {      //Include checks to ensure that the entry itself is not greater than 10MB. If entry is greater than 10MB, discard the entry.
+                    sb.append(request);
+                    sb.append("\n");
+                    rowCount ++;
+                    //JOptionPane.showMessageDialog(null, "appended the request: " + request);
+                }
+
+                else if (request.length() + 1 >= this.bigQueryLimit) {   //if the size of one request is greater than 10MB, do nothing
+                    //do nothing
+                }
+
+                else if(totalSizeToBe > this.bigQueryLimit || rowCount >= rowCountLimit) {      //If whole request will be greater than 10MB, send the request prior to appending, delete the contents of the builder, then add the new request
+                    prepareToSend(sb);
+                    sb.setLength(0);
+                    rowCount = 0;
+                    sb.append(request);
+                    rowCount ++;
+                }
+                else {
+                    //Drop the request
+                }
+            }
+        }
+        prepareToSend(sb);
+    }
+
+
+    private void uploadStreamingEntries() {
+        //JOptionPane.showMessageDialog(null, "uploading entries");
+        if (!this.isEnabled || this.pendingEntries.size() == 0) return;
+        ArrayList<LogEntry> entriesInBulk;
+        StringBuilder sb = new StringBuilder();
+        int rowCount = 0;
         synchronized (pendingEntries) {
             entriesInBulk = (ArrayList<LogEntry>) pendingEntries.clone();
             pendingEntries.clear();
@@ -209,6 +255,9 @@ public class BigQueryLogger implements LogEntryListener {
         }
         prepareToSend(sb);
     }
+
+
+
 
 
 
